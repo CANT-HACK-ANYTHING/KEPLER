@@ -1,0 +1,212 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cedarville+Cursive&family=Patrick+Hand&family=Schoolbell&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+}
+
+body {
+  background-color: #0F172A;
+  color: #F8FAFC;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar for Allie chat container */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(1.5deg);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 3.5s ease-in-out infinite;
+}
+
+/* Levitating Angel Cat Keyframes */
+@keyframes catLevitate {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes catShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.32;
+  }
+  50% {
+    transform: scale(0.72);
+    opacity: 0.14;
+  }
+}
+
+.animate-cat-levitate {
+  animation: catLevitate 3.4s ease-in-out infinite;
+}
+
+.animate-cat-shadow {
+  animation: catShadow 3.4s ease-in-out infinite;
+}
+
+/* Crossfade & Intro Video Transition Keyframes */
+@keyframes enterAnimation {
+  from {
+    opacity: var(--tw-enter-opacity, 0);
+    transform: translate3d(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0), 0) scale3d(var(--tw-enter-scale, 1), var(--tw-enter-scale, 1), var(--tw-enter-scale, 1));
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  }
+}
+
+.animate-in {
+  animation-name: enterAnimation;
+  animation-duration: 1000ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  --tw-enter-opacity: 0;
+}
+
+.zoom-in-95 {
+  --tw-enter-scale: 0.95;
+}
+
+.duration-1000 {
+  animation-duration: 1000ms;
+}
+
+.duration-700 {
+  animation-duration: 700ms;
+}
+
+/* Smooth Opacity Dissolve for Overlays and Crossfades */
+@keyframes fadeInSmooth {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in-smooth {
+  animation: fadeInSmooth 850ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fade-in-smooth-delay {
+  animation: fadeInSmooth 950ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+}
+
+/* Chalk and Blackboard Typography */
+.font-chalk {
+  font-family: 'Schoolbell', 'Caveat', 'Patrick Hand', cursive, sans-serif;
+}
+
+.font-chalk-curvy {
+  font-family: 'Caveat', 'Cedarville Cursive', cursive, sans-serif;
+  font-feature-settings: "calt" 1, "liga" 1;
+}
+
+/* Real Dry Matte Chalk Typography (Pure Milky White, Zero Glow, Rough Imperfect Strokes) */
+.chalk-matte-filter {
+  filter: url(#chalk-roughness);
+}
+
+.chalk-welcome {
+  font-family: 'Caveat', 'Cedarville Cursive', cursive;
+  font-feature-settings: "calt" 1, "liga" 1;
+  color: #F8F8F4;
+  text-shadow: 0.4px 0.3px 0px rgba(255, 255, 255, 0.45), -0.3px -0.2px 0px rgba(230, 230, 220, 0.3);
+}
+
+.chalk-name {
+  font-family: 'Caveat', 'Cedarville Cursive', cursive;
+  font-feature-settings: "calt" 1, "liga" 1;
+  color: #FFFFFF;
+  text-shadow: 0.4px 0.4px 0px rgba(255, 255, 255, 0.5), -0.3px -0.2px 0px rgba(230, 230, 220, 0.35);
+}
+
+.chalk-sub {
+  font-family: 'Caveat', 'Cedarville Cursive', cursive;
+  font-feature-settings: "calt" 1, "liga" 1;
+  color: #EDEDE6;
+  text-shadow: 0.3px 0.2px 0px rgba(255, 255, 255, 0.35);
+}
+
+.chalk-meta {
+  font-family: 'Caveat', 'Cedarville Cursive', cursive;
+  font-feature-settings: "calt" 1, "liga" 1;
+  color: #DFDFD7;
+  text-shadow: 0.25px 0.2px 0px rgba(255, 255, 255, 0.25);
+}
+
+.chalk-dust {
+  color: #FFFFFF;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.95), 0 0 3px rgba(255, 255, 255, 0.7), 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.font-handwriting {
+  font-family: 'Patrick Hand', 'Caveat', cursive, sans-serif;
+}
+
+.chalk-text {
+  color: #FFFFFF;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 255, 0.25);
+}
+
+.chalk-heading {
+  color: #FFFFFF;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.9), 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.whiteboard-chalk {
+  color: #FFFFFF;
+  text-shadow: 0 1px 3px rgba(15, 23, 42, 0.9), 0 0 4px rgba(15, 23, 42, 0.7);
+}
+
