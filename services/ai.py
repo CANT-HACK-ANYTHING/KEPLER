@@ -272,7 +272,7 @@ def get_analysis_ai_client_and_model() -> tuple[OpenAI, str, str]:
     gemini_key = (os.getenv("GEMINI_API_KEY") or "").strip()
 
     if nvidia_key not in PLACEHOLDERS:
-        client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=nvidia_key, timeout=25.0)
+        client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=nvidia_key, timeout=50.0)
         model = os.getenv("NVIDIA_ANALYSIS_MODEL") or os.getenv("NVIDIA_MODEL") or "meta/llama-3.2-11b-vision-instruct"
         return client, model, "nvidia"
 
