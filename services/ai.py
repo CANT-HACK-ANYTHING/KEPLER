@@ -263,9 +263,32 @@ def generate_tutor_reply(
     raise RuntimeError("Failed to generate reply from configured providers.")
 
 
+def get_analysis_ai_client_and_model() -> tuple[OpenAI, str, str]:
+    """
+    Returns (OpenAI client, model_name, provider_name) specifically for the Student Progress Analyzer.
+    Prioritizes NVIDIA NIM with meta/llama-3.2-11b-vision-instruct, with failover to Gemini.
+    """
+    nvidia_key = (os.getenv("NVIDIA_API_KEY") or "").strip()
+    gemini_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+
+    if nvidia_key not in PLACEHOLDERS:
+        client = OpenAI(base_url="https://integrate.api.nvidia.com/v1", api_key=nvidia_key, timeout=25.0)
+        model = os.getenv("NVIDIA_ANALYSIS_MODEL") or os.getenv("NVIDIA_MODEL") or "meta/llama-3.2-11b-vision-instruct"
+        return client, model, "nvidia"
+
+    if gemini_key not in PLACEHOLDERS:
+        client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key=gemini_key, timeout=25.0)
+        model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+        return client, model, "gemini"
+
+    raise ValueError("No valid API key found for the Analysis AI. Please set NVIDIA_API_KEY in .env.")
+
+
 def generate_analysis_completion(prompt_payload: str) -> str:
-    """Generate completion for student 4-factor analytics and reports."""
-    global _WORKING_CANDIDATE_INDEX
+    """
+    Generate completion for student 4-factor analytics and reports.
+    Runs on NVIDIA NIM (NVIDIA_API_KEY) with meta/llama-3.2-11b-vision-instruct.
+    """
     messages = [
         {
             "role": "system",
@@ -274,24 +297,25 @@ def generate_analysis_completion(prompt_payload: str) -> str:
         {"role": "user", "content": prompt_payload},
     ]
 
-    candidates = _build_candidates(get_active_provider())
-    if not candidates:
-        raise ValueError("No valid API key found in .env.")
-
-    idx_order = list(range(_WORKING_CANDIDATE_INDEX, len(candidates))) + list(range(0, _WORKING_CANDIDATE_INDEX))
-    for idx in idx_order:
-        client, target_model, prov = candidates[idx]
-        try:
-            return _call_provider(client, target_model, prov, messages, is_longer_mode=True)
-        except Exception:
-            continue
-
-    return "{}"
+    try:
+        client, model, prov = get_analysis_ai_client_and_model()
+        logger.info("[ANALYSIS AI] Running student analysis on %s (%s)", prov.upper(), model)
+        return _call_provider(client, model, prov, messages, is_longer_mode=True)
+    except Exception as err:
+        logger.warning("[ANALYSIS AI] Primary analyzer failed (%s); checking failover...", err)
+        # Failover to Gemini if primary NVIDIA fails
+        gemini_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+        if gemini_key not in PLACEHOLDERS:
+            client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key=gemini_key, timeout=25.0)
+            return _call_provider(client, "gemini-3.5-flash-lite", "gemini", messages, is_longer_mode=True)
+        return "{}"
 
 
 def generate_socratic_quiz_completion(quiz_prompt_payload: str, student_context: str = "") -> str:
-    """Generate a personalized Class 10 Socratic quiz based on student's learning profile."""
-    global _WORKING_CANDIDATE_INDEX
+    """
+    Generate a personalized Class 10 Socratic quiz based on student's learning profile.
+    Runs on NVIDIA NIM (NVIDIA_API_KEY) with meta/llama-3.2-11b-vision-instruct.
+    """
     messages = [
         {
             "role": "system",
@@ -303,16 +327,14 @@ def generate_socratic_quiz_completion(quiz_prompt_payload: str, student_context:
         {"role": "user", "content": quiz_prompt_payload},
     ]
 
-    candidates = _build_candidates(get_active_provider())
-    if not candidates:
-        raise ValueError("No valid API key found in .env.")
-
-    idx_order = list(range(_WORKING_CANDIDATE_INDEX, len(candidates))) + list(range(0, _WORKING_CANDIDATE_INDEX))
-    for idx in idx_order:
-        client, target_model, prov = candidates[idx]
-        try:
-            return _call_provider(client, target_model, prov, messages, is_longer_mode=True)
-        except Exception:
-            continue
-
-    return "Personalized quiz currently unavailable. Please try again in a moment."
+    try:
+        client, model, prov = get_analysis_ai_client_and_model()
+        logger.info("[ANALYSIS AI] Generating diagnostic quiz on %s (%s)", prov.upper(), model)
+        return _call_provider(client, model, prov, messages, is_longer_mode=True)
+    except Exception as err:
+        logger.warning("[ANALYSIS AI] Primary quiz generator failed (%s); checking failover...", err)
+        gemini_key = (os.getenv("GEMINI_API_KEY") or "").strip()
+        if gemini_key not in PLACEHOLDERS:
+            client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key=gemini_key, timeout=25.0)
+            return _call_provider(client, "gemini-3.5-flash-lite", "gemini", messages, is_longer_mode=True)
+        return "Personalized quiz currently unavailable. Please try again in a moment."
