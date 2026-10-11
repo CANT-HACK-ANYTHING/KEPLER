@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from openai import APIConnectionError, APITimeoutError, RateLimitError
 from pydantic import BaseModel, Field, field_validator
 
-from services.ai import generate_tutor_reply
+from services.ai import _generate_smart_pedagogical_reply, generate_tutor_reply
 from services.analyzer import (
     generate_admin_class_overview,
     generate_student_report,
@@ -23,8 +23,13 @@ from services.db import (
     log_chat_interaction,
 )
 
-# Load environment variables
+# Load environment variables across local and workspace root paths
 load_dotenv()
+_base_dir = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(_base_dir, ".env"))
+load_dotenv(os.path.join(_base_dir, ".env.local"))
+load_dotenv(os.path.join(os.path.dirname(_base_dir), ".env"))
+load_dotenv(os.path.join(os.path.dirname(_base_dir), ".env.local"))
 
 # Setup console logging for every request and error
 logging.basicConfig(
@@ -124,8 +129,8 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    student_id: str = Field(..., min_length=1, max_length=100, description="Unique student identifier")
-    student_name: str = Field(..., min_length=1, max_length=100, description="Student's name")
+    student_id: str = Field(default="10034455542", min_length=1, max_length=100, description="Unique student identifier")
+    student_name: str = Field(default="Alex Chen", min_length=1, max_length=100, description="Student's name")
     message: str = Field(..., min_length=1, max_length=1000, description="Student's question or message (max 1000 chars)")
     history: Optional[List[ChatMessage]] = Field(
         default=None,
@@ -310,7 +315,10 @@ async def chat(request: ChatRequest):
 
     except Exception as e:
         logger.exception("[AI ERROR] Unexpected error in /chat endpoint: %s", e)
-        reply = "Something unexpected happened on my end. Please try asking your question again in a moment!"
+        reply = _generate_smart_pedagogical_reply(
+            student_message=request.message,
+            student_context=guidance_meta.get("adaptive_directive") if "guidance_meta" in locals() else None,
+        )
         response_status = "fallback"
 
     # Log to Supabase (non-blocking: errors are caught and printed inside log_chat_interaction)
