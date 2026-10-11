@@ -1,11 +1,3 @@
-import { Metadata } from "next";
-import { DoubtSolvingInterface } from "@/components/DoubtSolvingInterface";
-
-export const metadata: Metadata = {
-  title: "AI Assistant — Doubt Solver",
-  description: "AI-powered doubt solving interface with Socratic Method, Detailed Explanation, and Exam Ready modes.",
-};
-
-export default function AskPage() {
-  return <DoubtSolvingInterface />;
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:ee9d8bec3e79fa3185aa81c7de15095f00dbcbbb231d578dbd9f4d6f5693c67c
+size 385

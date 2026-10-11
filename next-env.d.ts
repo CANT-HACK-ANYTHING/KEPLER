@@ -1,5 +1,3 @@
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
-
-// NOTE: This file should not be edited
-// see https://nextjs.org/docs/app/building-your-application/configuring/typescript for more information.
+version https://git-lfs.github.com/spec/v1
+oid sha256:e462a655754db9df18b4a657454a7b6a88717ffded4e89403b2b3a47c6603fc3
+size 233
