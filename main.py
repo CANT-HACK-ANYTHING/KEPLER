@@ -136,6 +136,10 @@ class ChatRequest(BaseModel):
         default=None,
         description="Optional conversation history list of previous user/assistant messages",
     )
+    mode: Optional[str] = Field(
+        default="socratic",
+        description="Tutoring mode matching frontend options: 'socratic' (Socratic Method), 'detailed_explanation' (Detailed Explanation), or 'exam_ready' (Exam Ready)",
+    )
 
     @field_validator("student_id", "student_name", "message")
     @classmethod
@@ -145,10 +149,21 @@ class ChatRequest(BaseModel):
             raise ValueError("Field cannot be empty or contain only whitespace.")
         return cleaned
 
+    @field_validator("mode")
+    @classmethod
+    def validate_mode(cls, value: Optional[str]) -> str:
+        if not value:
+            return "socratic"
+        normalized = value.strip().lower().replace(" ", "_").replace("-", "_")
+        if normalized not in ("socratic", "detailed_explanation", "exam_ready"):
+            raise ValueError("mode must be 'socratic', 'detailed_explanation', or 'exam_ready'")
+        return normalized
+
 
 class ChatResponse(BaseModel):
     reply: str = Field(..., description="The AI tutor's response message")
     status: str = Field(..., description="Status of the response ('success' or 'fallback')")
+    mode: str = Field(default="socratic", description="Active tutoring mode applied to the response")
     detected_subject: Optional[str] = Field(default="General", description="Detected Class 10 CBSE subject")
     support_tier: Optional[str] = Field(
         default="guided_support",
@@ -288,15 +303,23 @@ async def chat(request: ChatRequest):
             reply = generate_tutor_reply(
                 student_message=request.message,
                 history=formatted_history,
+                mode=request.mode or "socratic",
                 student_context=guidance_meta.get("adaptive_directive"),
             )
         except TypeError:
-            # Backward-compatibility if generate_tutor_reply is mocked with old signature in unit tests
-            reply = generate_tutor_reply(
-                student_message=request.message,
-                history=formatted_history,
-            )
-        logger.info("[AI SUCCESS] Generated reply for student_id=%s", request.student_id)
+            # Backward-compatibility if generate_tutor_reply is mocked with older signature in unit tests
+            try:
+                reply = generate_tutor_reply(
+                    student_message=request.message,
+                    history=formatted_history,
+                    mode=request.mode or "socratic",
+                )
+            except TypeError:
+                reply = generate_tutor_reply(
+                    student_message=request.message,
+                    history=formatted_history,
+                )
+        logger.info("[AI SUCCESS] Generated reply for student_id=%s [mode=%s]", request.student_id, request.mode)
 
     except APITimeoutError as e:
         logger.error("[AI TIMEOUT] Model timed out for student %s: %s", request.student_id, e)
@@ -336,6 +359,7 @@ async def chat(request: ChatRequest):
     return ChatResponse(
         reply=reply,
         status=response_status,
+        mode=request.mode or "socratic",
         detected_subject=guidance_meta.get("detected_subject", "General"),
         support_tier=guidance_meta.get("support_tier", "guided_support"),
         support_needed_score=guidance_meta.get("support_needed_score", 50.0),
