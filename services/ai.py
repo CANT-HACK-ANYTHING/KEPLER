@@ -28,7 +28,7 @@ PLACEHOLDERS = {
 GEMINI_MODEL_POOL = [
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite",
-    "gemma-4-26b-a4b-it",
+    "gemini-3.8-flash",
     "gemini-3.5-flash",
 ]
 
