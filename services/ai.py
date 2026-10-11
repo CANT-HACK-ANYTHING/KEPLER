@@ -159,6 +159,8 @@ def _call_provider(
     """Execute the chat completion call for a specific provider."""
     max_tokens = 1500 if is_longer_mode else 350
 
+    req_timeout = 60.0 if is_longer_mode else 25.0
+
     if provider == "gemini" and target_model.startswith("gemini-"):
         response = client.chat.completions.create(
             model=target_model,
@@ -166,7 +168,7 @@ def _call_provider(
             temperature=0.3 if is_longer_mode else 0.4,
             max_tokens=max_tokens,
             reasoning_effort="low",
-            timeout=25.0,
+            timeout=req_timeout,
         )
     else:
         response = client.chat.completions.create(
@@ -174,7 +176,7 @@ def _call_provider(
             messages=messages,
             temperature=0.3 if is_longer_mode else 0.4,
             max_tokens=max_tokens,
-            timeout=20.0,
+            timeout=req_timeout,
         )
 
     if not response.choices or not response.choices[0].message:
