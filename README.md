@@ -127,15 +127,21 @@ CORS is enabled for **all origins (`*`)**. All numeric scores (`overall_score_av
 ```javascript
 const API_BASE = "http://localhost:8000";
 
-// 1. Student Socratic Chat (Adaptive based on 4-factor profile)
-export async function sendChatMessage(studentId, studentName, message, history = []) {
+// 1. Student Chat with 3 Function Modes ('socratic' | 'detailed_explanation' | 'exam_ready')
+export async function sendChatMessage(studentId, studentName, message, history = [], mode = "socratic") {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ student_id: studentId, student_name: studentName, message, history }),
+    body: JSON.stringify({
+      student_id: studentId,
+      student_name: studentName,
+      message,
+      history,
+      mode, // "socratic" (Socratic Method) | "detailed_explanation" (Detailed Explanation) | "exam_ready" (Exam Ready)
+    }),
   });
   return await res.json();
-  // Returns: { reply, status, detected_subject, support_tier, support_needed_score }
+  // Returns: { reply, status, mode, detected_subject, support_tier, support_needed_score }
 }
 
 // 2. Teacher/Admin: Record a Student Test/Quiz Score
